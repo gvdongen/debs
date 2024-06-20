@@ -28,9 +28,9 @@ Keyed by user ID.
 1. Create a class `CartObject`
 2. Add the @VirtualObject annotation
 3. Define three handlers
-	a. addTicket(String ticketId) -> boolean success
-	b. expireTicket(String ticketId) -> void
-	c. checkout() -> boolean success
+	1. addTicket(String ticketId) -> boolean success
+	2. expireTicket(String ticketId) -> void
+	3. checkout() -> boolean success
 
 # Create the TicketObject
 
@@ -40,9 +40,9 @@ Keyed by ticket ID.
 
 1. Create a class `TicketObject`
 2. Define three handlers
-	a. reserve() -> boolean success
-	b. unreserve() → void
-	c. markAsSold() → void
+	1. reserve() -> boolean success
+	2. unreserve() → void
+	3. markAsSold() → void
 
 # Serving the Virtual Objects
 - Create an AppMain class with a main method
@@ -103,10 +103,10 @@ curl -X POST localhost:8080/CartObject/Mary/checkout
 # Implementing `TicketObject/reserve`
 1. Get the “status” from Restate K/V state
 2. If the status equals “Available”, then 
-	a. set it to “Reserved”
-	b. return true
+	1. set it to “Reserved”
+	2. return true
 3. Else 
-	a. return false
+	1. return false
 
 # Implementing the other two TicketObject handlers
 ## `TicketObject/unreserve`
@@ -129,17 +129,17 @@ restate kv get TicketObject ticket1
 # Implementing `CartObject/addTicket`
 1. Reserve the ticket → TicketObject/reserve
 2. If success
-	a. Get Set of ticket IDs from K/V state
-	b. Add current ticketID to the state
-	c. Set timer to expire ticket in 15 minutes
+	1. Get Set of ticket IDs from K/V state
+	2. Add current ticketID to the state
+	3. Set timer to expire ticket in 15 minutes
 3. Else return false
 
 # Implement `CartObject/checkout`
 1. Get the tickets from state and check if they are not empty
-	a. If empty, return false
+	1. If empty, return false
 2. Do the payment
-	a. Generate a resilient, unique payment identifier
-	b. Do the payment by creating a stub 
+	1. Generate a resilient, unique payment identifier
+	2. Do the payment by creating a stub 
 	```java
     private boolean pay(String idempotencyKey, double totalPrice){
         System.out.println("Paying tickets for " + idempotencyKey + " and price " + totalPrice);
@@ -164,9 +164,9 @@ restate invocations describe <id>
 
 # Continue the implementation of `CartObject/checkout`
 1. If payment was success, 
-	a. Call TicketObject/markAsSold for each ticket
-	b. Clear the state
-	c. Return true (success)
+	1. Call TicketObject/markAsSold for each ticket
+	2. Clear the state
+	3. Return true (success)
 2. Else return false (failure)
 
 # Implementing `CartObject/expireTicket`
