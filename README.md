@@ -188,3 +188,5 @@ Check the service logs → no re-execution
 
 
 # 🎉 Done!
+
+![result](./img/result.png)
