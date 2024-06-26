@@ -6,7 +6,6 @@
 Go to docs.restate.dev → Develop → Local Dev
 https://docs.restate.dev/develop/local_dev#running-restate-server--cli-locally 
 
-![docs](./img/docs.png)
 
 Download the Restate Server and CLI in your preferred way
 
@@ -64,6 +63,14 @@ Via the run button in the IDE or via
 ./gradlew run
 ```
 
+# Run the Restate Server
+
+```shell
+restate-server
+```
+
+Or adapt based on the way you installed the server.
+
 # Register the services
 Via the Restate CLI:
 
@@ -89,9 +96,9 @@ curl -X POST localhost:8080/TicketObject/ticket1/markAsSold
 Add a ticket to Mary’s cart:
 
 ```shell
-curl localhost:8080/CartObject/Mary/addTicket 
--H 'content-type: application/json' 
--d '"seat2B"'
+curl localhost:8080/CartObject/Mary/addTicket \
+-H 'content-type: application/json' \
+-d '"seat2B"' \
 ```
 
 Let Mary buy the ticket:
@@ -132,7 +139,7 @@ restate kv get TicketObject ticket1
 	1. Get Set of ticket IDs from K/V state
 	2. Add current ticketID to the state
 	3. Set timer to expire ticket in 15 minutes
-3. Else return false
+3. Return reservation success
 
 # Implement `CartObject/checkout`
 1. Get the tickets from state and check if they are not empty
@@ -165,7 +172,7 @@ restate invocations describe <id>
 # Continue the implementation of `CartObject/checkout`
 1. If payment was success, 
 	1. Call TicketObject/markAsSold for each ticket
-	2. Clear the state
+	2. Clear the cart
 	3. Return true (success)
 2. Else return false (failure)
 
@@ -179,13 +186,58 @@ restate invocations describe <id>
 
 
 ```shell
-curl localhost:8080/CartObject/Mary/addTicket 
+curl localhost:8080/CartObject/Mary/addTicket \
    -H 'content-type: application/json' \
    -H 'idempotency-key: ad5472esg4dsg525dssdfa5loi'  \
    -d '"seat2C"'
 ```
 Check the service logs → no re-execution
 
+
+# Hooking up the `reserve` method to Kafka 
+
+Imagine there are multiple websites where tickets for the same concert can be reserved. 
+These other websites send events over Kafka. 
+
+Let's hook up the `reserve` method to Kafka.
+
+
+Start up a Kafka cluster
+
+```
+docker compose up
+```
+
+
+Start up Restate with the configuration file containing the location of our Kafka cluster:
+
+```shell
+restate-server --config-file restate.toml
+```
+
+
+Connect the `reserve` method with the Kafka topic:
+
+
+```shell
+curl localhost:9070/subscriptions -H 'content-type: application/json' \
+    -d '{
+            "source": "kafka://my-cluster/driver-updates",
+            "sink": "service://TicketObject/reserve",
+            "options": {"auto.offset.reset": "earliest"}
+        }'
+```
+
+
+Publish something to the topic
+
+```shell
+docker ps
+
+docker exec -ti f7381464eaef /bin/bash
+
+kafka-console-producer --bootstrap-server localhost:9092 --topic reserve
+```
 
 # 🎉 Done!
 
