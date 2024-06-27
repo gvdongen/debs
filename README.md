@@ -98,7 +98,7 @@ Add a ticket to Mary’s cart:
 ```shell
 curl localhost:8080/CartObject/Mary/addTicket \
 -H 'content-type: application/json' \
--d '"seat2B"' \
+-d '"seat2B"' 
 ```
 
 Let Mary buy the ticket:
@@ -108,19 +108,19 @@ curl -X POST localhost:8080/CartObject/Mary/checkout
 ```
 
 # Implementing `TicketObject/reserve`
-1. Get the “status” from Restate K/V state
-2. If the status equals “Available”, then 
-	1. set it to “Reserved”
+1. Get the `“status”` from Restate K/V state
+2. If the status equals `“Available”`, then 
+	1. set it to `“Reserved”`
 	2. return true
 3. Else 
 	1. return false
 
 # Implementing the other two TicketObject handlers
 ## `TicketObject/unreserve`
-If the status does not equal “Sold”, then clear it.
+If the status does not equal `“Sold”`, then clear it.
 
 ## `TicketObject/markAsSold`
-If the status equals “Reserved”, then set it to “Sold”.
+If the status equals `“Reserved”`, then set it to `“Sold”`.
 
 # What do we have now?
 - For each ticket, a permanently living object in Restate
@@ -222,7 +222,7 @@ Connect the `reserve` method with the Kafka topic:
 ```shell
 curl localhost:9070/subscriptions -H 'content-type: application/json' \
     -d '{
-            "source": "kafka://my-cluster/driver-updates",
+            "source": "kafka://my-cluster/reserve",
             "sink": "service://TicketObject/reserve",
             "options": {"auto.offset.reset": "earliest"}
         }'
@@ -238,6 +238,11 @@ docker exec -ti f7381464eaef /bin/bash
 
 kafka-console-producer --bootstrap-server localhost:9092 --topic reserve
 ```
+
+For example: `ticket1={}`
+You should see in the logs that the reserve method got executed.
+
+Try to do the same for `addTicket` of the `CartService`.
 
 # 🎉 Done!
 
