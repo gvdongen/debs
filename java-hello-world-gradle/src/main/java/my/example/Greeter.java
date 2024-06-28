@@ -11,26 +11,13 @@
 
 package my.example;
 
-import dev.restate.sdk.Context;
-import dev.restate.sdk.annotation.Handler;
-import dev.restate.sdk.annotation.Service;
 import dev.restate.sdk.http.vertx.RestateHttpEndpointBuilder;
 
-/**
- * Template of a Restate service and handler
- * Have a look at the Java QuickStart to learn how to run this: https://docs.restate.dev/get_started/quickstart?sdk=java
- */
-@Service
-public class Greeter {
-
-  @Handler
-  public String greet(Context ctx, String greeting) {
-    return greeting;
-  }
-
+class AppMain {
   public static void main(String[] args) {
     RestateHttpEndpointBuilder.builder()
-            .bind(new Greeter())
+            .bind(new CartObject())
+            .bind(new TicketObject())
             .buildAndListen();
   }
 }
