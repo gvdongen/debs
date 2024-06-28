@@ -1,6 +1,7 @@
 package my.example;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import dev.restate.sdk.JsonSerdes;
 import dev.restate.sdk.ObjectContext;
 import dev.restate.sdk.annotation.Handler;
 import dev.restate.sdk.annotation.VirtualObject;
@@ -44,6 +45,25 @@ public class CartObject {
 
     @Handler
     public boolean checkout(ObjectContext ctx) {
+        Set<String> cart = ctx.get(CART).orElseGet(HashSet::new);
+
+        if(cart.isEmpty()){
+            return false;
+        }
+
+        String idempotencyKey = ctx.random().nextUUID().toString();
+        boolean paid = ctx.run(JsonSerdes.BOOLEAN,
+                () -> pay(idempotencyKey, cart.size()*40));
+
         return true;
+    }
+
+    private boolean pay(String idempotencyKey, double totalPrice){
+        System.out.println("Paying tickets for " + idempotencyKey + " and price " + totalPrice);
+        return true;
+    }
+
+    private void fail(){
+        throw new IllegalStateException("The handler failed");
     }
 }
